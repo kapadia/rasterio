@@ -12,8 +12,12 @@ import pytest
 if sys.version_info > (3,):
     reduce = functools.reduce
 
-test_files = [os.path.join(os.path.dirname(__file__), p) for p in [
-    'data/RGB.byte.tif', 'data/float.tif', 'data/float_nan.tif', 'data/shade.tif']]
+test_files = [
+    os.path.join(os.path.dirname(__file__), p) for p in [
+        'data/RGB.byte.tif',
+        'data/float.tif',
+        'data/float_nan.tif',
+        'data/shade.tif']]
 
 
 def pytest_cmdline_main(config):
@@ -31,9 +35,10 @@ def runner():
     return CliRunner()
 
 
-@pytest.fixture(scope='function')
-def data(tmpdir):
+@pytest.fixture(scope='module')
+def data():
     """A temporary directory containing a copy of the files in data."""
+    tmp = py.test.ensuretemp('tests/data')
     for filename in test_files:
-        shutil.copy(filename, str(tmpdir))
-    return tmpdir
+        shutil.copy(filename, str(tmp))
+    return tmp
