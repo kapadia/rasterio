@@ -337,7 +337,7 @@ def _reproject(
         raise ValueError("Invalid destination")
 
     cdef char **options = NULL
-    cdef char **papszMetadata = NULL;
+    cdef char **papszMetadata
     cdef void *hTransformArg = NULL
     cdef _gdal.GDALWarpOptions *psWOptions = NULL
     cdef GDALWarpOperation *oWarper = new GDALWarpOperation()
@@ -345,17 +345,18 @@ def _reproject(
 
     try:
 
+        # TODO: Set these options within the numpy/band check
         papszMetadata = _gdal.GDALGetMetadata(hdsin, "RPC")
+        
         if papszMetadata != NULL:
             _gdal.CSLSetNameValue(options, "SRC_METHOD", "RPC")
-        else:
-            _gdal.CSLSetNameValue(options, "GCPS_OK", "TRUE")
-            _gdal.CSLSetNameValue(options, "REFINE_TOLERANCE", "1")
-            _gdal.CSLSetNameValue(options, "MAX_GCP_ORDER", "1000.0")
+
+        _gdal.CSLSetNameValue(options, "GCPS_OK", "TRUE")
+        _gdal.CSLSetNameValue(options, "REFINE_TOLERANCE", "1")
+        _gdal.CSLSetNameValue(options, "MAX_GCP_ORDER", "1000.0")
         
         hTransformArg = _gdal.GDALCreateGenImgProjTransformer2(hdsin, hdsout, options)
         _gdal.CSLDestroy(options)
-        _gdal.CSLDestroy(papszMetadata)
 
         if hTransformArg == NULL:
             raise ValueError("NULL transformer")
